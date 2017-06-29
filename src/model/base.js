@@ -97,8 +97,8 @@ export default class extends Base {
   /**
    * parse options
    * @param oriOpts options
-   * @param extraOptions 
-   * @param flag 
+   * @param extraOptions
+   * @param flag
    */
   async parseOptions(oriOpts, extraOptions, flag = false){
     let options = think.extend({}, this._options);
@@ -180,7 +180,7 @@ export default class extends Base {
         }
       }
     }
-    
+
     return this.optionsFilter(options, schema);
   }
   /**
@@ -387,7 +387,7 @@ export default class extends Base {
     }
 
     let rows = await this.db().update(parsedData, options);
-    let copyData = think.extend({}, data, parsedData);
+    let copyData = think.extend({}, data, parsedData, options.where);
     await this.afterUpdate(copyData, options);
     return rows;
   }

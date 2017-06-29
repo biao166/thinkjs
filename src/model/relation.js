@@ -24,7 +24,7 @@ export default class extends think.model.base {
         type: think.model.HAS_ONE, //relation type
         model: 'profile', //model name
         name: 'profile', //data name
-        key: 'id', 
+        key: 'id',
         fKey: 'user_id', //forign key
         field: 'id,name',
         where: 'name=xx',
@@ -95,7 +95,7 @@ export default class extends think.model.base {
   /**
    * get relation data
    * @param  {}  data       []
-   * @param  Boolean isDataList 
+   * @param  Boolean isDataList
    * @return {}
    */
   async getRelation(data, options = {}){
@@ -152,7 +152,7 @@ export default class extends think.model.base {
       }
 
       opts.model = model;
-      
+
       switch(item.type){
         case think.model.BELONG_TO:
           // if(item.model) {
@@ -160,7 +160,7 @@ export default class extends think.model.base {
           // }
           opts = think.extend(opts, {
             key: opts.model.getModelName() + '_id',
-            fKey: 'id' 
+            fKey: 'id'
           }, item);
           opts.model = model; //get ref back
           return this._getBelongsToRelation(data, opts, options);
@@ -436,7 +436,7 @@ export default class extends think.model.base {
    * @param  {} parsedOptions []
    * @return {}               []
    */
-  _postHasManyRelation(data, mapOpts){
+  async _postHasManyRelation(data, mapOpts){
     let mapData = mapOpts.data;
     let model = mapOpts.model;
     if (!think.isArray(mapData)) {
@@ -449,20 +449,20 @@ export default class extends think.model.base {
           return item;
         });
         return model.addMany(mapData);
+
       case 'UPDATE':
+        await model.where({[mapOpts.fKey]: data[mapOpts.key]}).delete();
+
         return model.getSchema().then(() => {
-          let pk = model.getPk();
           let promises = mapData.map(item => {
-            if (item[pk]) {
-              return model.update(item);
-            }else{
-              item[mapOpts.fKey] = data[mapOpts.key];
-              //ignore error when add data
-              return model.add(item).catch(() => {});
-            }
+            item[mapOpts.fKey] = data[mapOpts.key];
+            //ignore error when add data
+            return model.add(item).catch(() => {});
           });
+
           return Promise.all(promises);
         });
+
       case 'DELETE':
         let where = {[mapOpts.fKey]: data[mapOpts.key]};
         return model.where(where).delete();
@@ -485,7 +485,7 @@ export default class extends think.model.base {
     let type = mapOpts.postType;
     if (type === 'DELETE' || type === 'UPDATE') {
       let where = {[mapOpts.fKey]: data[mapOpts.key]};
-      await relationModel.where(where).delete(); 
+      await relationModel.where(where).delete();
     }
 
     if (type === 'ADD' || type === 'UPDATE') {
@@ -499,7 +499,7 @@ export default class extends think.model.base {
           return {[mapOpts.fKey]: data[mapOpts.key], [rfKey]: item[rfKey] || item};
         });
         await relationModel.addMany(postData);
-      }else{ 
+      }else{
         let unqiueField = await model.getUniqueField();
         if (!unqiueField) {
           return think.reject(new Error('table `' + model.getTableName() + '` has no unqiue field'));
