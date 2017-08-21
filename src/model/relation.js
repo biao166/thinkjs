@@ -465,7 +465,7 @@ export default class extends think.model.base {
 
       case 'DELETE':
         let where = {[mapOpts.fKey]: data[mapOpts.key]};
-        return model.where(where).delete();
+        return data[mapOpts.key] && model.where(where).delete();
     }
   }
   /**
